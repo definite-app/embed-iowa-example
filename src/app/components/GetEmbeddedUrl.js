@@ -14,7 +14,12 @@ async function getEmbeddedUrl(canvasId, userIdentifier, requiredFilters) {
     embed_type: "dashboard"
   };
 
-  const response = await fetch('https://staging-def-py-backend-rn5klrouba-uc.a.run.app/v1/get_embedded_url', {
+  // Use local URL if USE_LOCAL_API environment variable is set, otherwise use staging
+  const baseUrl = process.env.USE_LOCAL_API === 'true' 
+    ? 'http://localhost:8001' 
+    : 'https://staging-def-py-backend-rn5klrouba-uc.a.run.app';
+
+  const response = await fetch(`${baseUrl}/v1/get_embedded_url`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${DEF_API_KEY}`,
@@ -23,6 +28,8 @@ async function getEmbeddedUrl(canvasId, userIdentifier, requiredFilters) {
     body: JSON.stringify(embed_options),
     // cache: 'no-store'
   });
+
+  console.log("FIND ME ", baseUrl);
 
   if (!response.ok) {
     const errorBody = await response.text();
@@ -35,6 +42,8 @@ async function getEmbeddedUrl(canvasId, userIdentifier, requiredFilters) {
   }
 
   const data = await response.json();
+
+  console.log("FIND ME ", data);
   let embeddedUrl = data.url;
   embeddedUrl = embeddedUrl.replace('/canvas/', '/dashboard/');
   return embeddedUrl;
